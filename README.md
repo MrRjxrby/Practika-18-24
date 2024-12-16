@@ -260,3 +260,387 @@ public class Matrix<T extends Number> {
     }
 }
 ```
+# Практика 22 
+Задание 1
+```
+package com.mycompany.rpncalculator;
+
+import java.util.Stack;
+import java.util.Scanner;
+
+public class RPNCalculator {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter expression:");
+        String input = scanner.nextLine();
+
+        try {
+            double result = evaluateRPN(input);
+            System.out.println("Result: " + result);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    public static double evaluateRPN(String expression) {
+        Stack<Double> stack = new Stack<>();
+        String[] tokens = expression.split(" ");
+
+        for (String token : tokens) {
+            if (isNumber(token)) {
+                stack.push(Double.parseDouble(token));
+            } else if (isOperator(token)) {
+                if (stack.size() < 2) {
+                    throw new IllegalArgumentException("Not enought numbers: " + token);
+                }
+                double b = stack.pop();
+                double a = stack.pop();
+                double result = applyOperation(a, b, token);
+                stack.push(result);
+            } else {
+                throw new IllegalArgumentException("Incorrect input: " + token);
+            }
+        }
+
+        if (stack.size() != 1) {
+            throw new IllegalArgumentException("Incorrect input.");
+        }
+
+        return stack.pop();
+    }
+
+    private static boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private static boolean isOperator(String token) {
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/");
+    }
+
+    private static double applyOperation(double a, double b, String operator) {
+        switch (operator) {
+            case "+":
+                return a + b;
+            case "-":
+                return a - b;
+            case "*":
+                return a * b;
+            case "/":
+                if (b == 0) {
+                    throw new IllegalArgumentException("Division by Zero.");
+                }
+                return a / b;
+            default:
+                throw new IllegalArgumentException("Unknown operator: " + operator);
+        }
+    }
+}
+```
+# Практика 23
+Задание 1
+Файл ArrayQueueModule(очередь с использованием статических переменных):
+```
+package com.mycompany.queue;
+
+public class ArrayQueue {
+    private Object[] elements;
+    private int size;
+    private int head;
+    private int tail;
+
+    public ArrayQueue() {
+        elements = new Object[10];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    public void enqueue(Object element) {
+        assert element != null;
+        ensureCapacity(size + 1);
+        elements[tail] = element;
+        tail = (tail + 1) % elements.length;
+        size++;
+    }
+
+    public Object element() {
+        assert size > 0;
+        return elements[head];
+    }
+
+    public Object dequeue() {
+        assert size > 0;
+        Object result = elements[head];
+        elements[head] = null;
+        head = (head + 1) % elements.length;
+        size--;
+        return result;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    public void clear() {
+        elements = new Object[10];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    private void ensureCapacity(int capacity) {
+        if (capacity > elements.length) {
+            Object[] newElements = new Object[2 * elements.length];
+            for (int i = 0; i < size; i++) {
+                newElements[i] = elements[(head + i) % elements.length];
+            }
+            elements = newElements;
+            head = 0;
+            tail = size;
+        }
+    }
+}
+```
+Файл ArrayQueueADT(очередь, как абстрактный типа данных):
+```
+package com.mycompany.queue;
+
+public class ArrayQueueADT {
+    private Object[] elements;
+    private int size;
+    private int head;
+    private int tail;
+
+    public ArrayQueueADT() {
+        elements = new Object[10];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    public static void enqueue(ArrayQueueADT queue, Object element) {
+        assert element != null;
+        ensureCapacity(queue, queue.size + 1);
+        queue.elements[queue.tail] = element;
+        queue.tail = (queue.tail + 1) % queue.elements.length;
+        queue.size++;
+    }
+
+    public static Object element(ArrayQueueADT queue) {
+        assert queue.size > 0;
+        return queue.elements[queue.head];
+    }
+
+    public static Object dequeue(ArrayQueueADT queue) {
+        assert queue.size > 0;
+        Object result = queue.elements[queue.head];
+        queue.elements[queue.head] = null;
+        queue.head = (queue.head + 1) % queue.elements.length;
+        queue.size--;
+        return result;
+    }
+
+    public static int size(ArrayQueueADT queue) {
+        return queue.size;
+    }
+
+    public static boolean isEmpty(ArrayQueueADT queue) {
+        return queue.size == 0;
+    }
+
+    public static void clear(ArrayQueueADT queue) {
+        queue.elements = new Object[10];
+        queue.size = 0;
+        queue.head = 0;
+        queue.tail = 0;
+    }
+
+    private static void ensureCapacity(ArrayQueueADT queue, int capacity) {
+        if (capacity > queue.elements.length) {
+            Object[] newElements = new Object[2 * queue.elements.length];
+            for (int i = 0; i < queue.size; i++) {
+                newElements[i] = queue.elements[(queue.head + i) % queue.elements.length];
+            }
+            queue.elements = newElements;
+            queue.head = 0;
+            queue.tail = queue.size;
+        }
+    }
+}
+```
+Файл ArrayQueue(очередь, как объектно-ориентированный класс):
+```
+package com.mycompany.queue;
+
+public class ArrayQueue {
+    private Object[] elements;
+    private int size;
+    private int head;
+    private int tail;
+
+    public ArrayQueue() {
+        elements = new Object[10];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    public void enqueue(Object element) {
+        assert element != null;
+        ensureCapacity(size + 1);
+        elements[tail] = element;
+        tail = (tail + 1) % elements.length;
+        size++;
+    }
+
+    public Object element() {
+        assert size > 0;
+        return elements[head];
+    }
+
+    public Object dequeue() {
+        assert size > 0;
+        Object result = elements[head];
+        elements[head] = null;
+        head = (head + 1) % elements.length;
+        size--;
+        return result;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    public void clear() {
+        elements = new Object[10];
+        size = 0;
+        head = 0;
+        tail = 0;
+    }
+
+    private void ensureCapacity(int capacity) {
+        if (capacity > elements.length) {
+            Object[] newElements = new Object[2 * elements.length];
+            for (int i = 0; i < size; i++) {
+                newElements[i] = elements[(head + i) % elements.length];
+            }
+            elements = newElements;
+            head = 0;
+            tail = size;
+        }
+    }
+}
+```
+Файл Queue(Main):
+```
+package com.mycompany.queue;
+
+public class Queue {
+    public static void main(String[] args) {
+        // Пример использования ArrayQueueModule
+        ArrayQueueModule.enqueue("AC");
+        ArrayQueueModule.enqueue("BT");
+        System.out.println(ArrayQueueModule.dequeue()); 
+        System.out.println(ArrayQueueModule.element()); 
+
+        // Пример использования ArrayQueueADT
+        ArrayQueueADT queueADT = new ArrayQueueADT();
+        ArrayQueueADT.enqueue(queueADT, "XS");
+        ArrayQueueADT.enqueue(queueADT, "YZ");
+        System.out.println(ArrayQueueADT.dequeue(queueADT)); 
+        System.out.println(ArrayQueueADT.element(queueADT)); 
+
+        // Пример использования ArrayQueue
+        ArrayQueue queue = new ArrayQueue();
+        queue.enqueue("21");
+        queue.enqueue("25");
+        System.out.println(queue.dequeue()); 
+        System.out.println(queue.element()); 
+    }
+}
+```
+# Практика 24
+Задание 1
+Файл Complex:
+```
+package com.mycompany.factory;
+
+public class Complex {
+    private int real;  
+    private int imaginary; 
+
+    public Complex(int real, int imaginary) {
+        this.real = real;
+        this.imaginary = imaginary;
+    }
+
+    public int getReal() {
+        return real;
+    }
+
+    public int getImaginary() {
+        return imaginary;
+    }
+
+    @Override
+    public String toString() {
+        return real + " + " + imaginary + "i";
+    }
+}
+```
+Файл ConcreteFactory:
+```
+package com.mycompany.factory;
+
+public class ConcreteFactory implements ComplexAbstractFactory {
+
+    @Override
+    public Complex createComplex() {
+        return new Complex(0, 0);
+    }
+
+    @Override
+    public Complex createComplex(int real, int imaginary) {
+        return new Complex(real, imaginary);
+    }
+}
+```
+Файл ComplexAbstractFactory:
+```
+package com.mycompany.factory;
+
+public interface ComplexAbstractFactory {
+    Complex createComplex();
+    Complex createComplex(int real, int imaginary);
+}
+```
+Файл Factory(Main):
+```
+package com.mycompany.factory;
+
+public class Factory {
+    public static void main(String[] args) {
+        ComplexAbstractFactory factory = new ConcreteFactory();
+
+        Complex defaultComplex = factory.createComplex();
+        System.out.println("Default Complex Number: " + defaultComplex);
+
+        Complex customComplex = factory.createComplex(9, 2);
+        System.out.println("Custom Complex Number: " + customComplex);
+    }
+}
+```
